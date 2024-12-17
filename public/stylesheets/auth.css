@@ -1,0 +1,180 @@
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: url('https://www.pexels.com/photo/river-flowing-through-forest-during-day-1352371/') no-repeat center center;
+  background-size: cover;
+}
+
+/* 表单容器 */
+.form-container {
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
+  width: 40%; /* 设置表单宽度 */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* 步骤小球导航 */
+.steps {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: -70px; /* 将小球放置到表单框外面 */
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+.step {
+  text-align: center;
+}
+
+.ball {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #ccc; /* 默认灰色 */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.step.active .ball {
+  background-color: #4CAF50; /* 当前步骤的颜色 */
+}
+
+.connector {
+  width: 50px;
+  height: 2px;
+  background-color: #ccc;
+  align-self: center;
+}
+
+.step.active .connector {
+  background-color: #4CAF50; /* 当前步骤的连接线 */
+}
+
+/* 表单标题 */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 表单标签 */
+label {
+  font-size: 16px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* 表单输入框 */
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+/* 提交按钮 */
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* 注册链接 */
+.register-link {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.register-link a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Modal Styles */
+.modal {
+  display: none; /* 默认隐藏 */
+  position: fixed;
+  z-index: 1; /* 在前面 */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* 背景色 */
+}
+
+.modal-content {
+  background-color: white;
+  margin: 15% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 500px;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+.email-verification {
+  display: flex;
+  align-items: center; /* 垂直居中对齐 */
+  gap: 10px; /* 输入框和按钮之间的间距 */
+}
+
+.email-verification label {
+  margin-right: 10px; /* 标签和输入框的间距 */
+}
+
+.email-verification input {
+  flex-grow: 1; /* 让输入框占据多余空间 */
+}
+
+.email-verification button {
+  white-space: nowrap; /* 防止按钮文本换行 */
+  padding: 5px 15px;
+  font-size: 14px;
+}

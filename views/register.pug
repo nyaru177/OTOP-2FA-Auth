@@ -1,0 +1,65 @@
+doctype html
+html(lang="en")
+  head
+    title= 注册
+    link(rel="stylesheet", href="/stylesheets/auth.css")
+  body
+    .container
+      .form-container
+        h1 注册页面
+        // 步骤小球导航
+        .steps
+          .step.active(step1)
+            .ball 1
+            p Step 1
+          .connector
+          .step(step2)
+            .ball 2
+            p Step 2
+          .connector
+          .step(step3)
+            .ball 3
+            p Step 3
+
+        // 注册表单
+        form(action="/register", method="POST", id="registerForm")
+          // Step 1: 填写用户名、邮箱、密码和确认密码
+          .step-1
+            label(for="username") 用户名：
+            input(type="text" id="username" name="username" required)
+
+            label(for="email") 邮箱:
+            input(type="email" id="email" name="email" required)
+
+            label(for="password") 密码:
+            input(type="password" id="password" name="password" required)
+
+            label(for="confirmPassword") 确认密码:
+            input(type="password" id="confirmPassword" name="confirmPassword" required)
+
+            button(type="button", id="nextStep1") 下一步
+
+          // Step 2: 验证邮箱
+          .step-2(style="display:none")
+            p 请查看您的电子邮件以验证您的帐户。
+
+            // 将输入框和按钮放在同一行
+            .email-verification
+              label(for="emailCode") 输入您的验证码:
+              input(type="text" id="emailCode" name="emailCode" required placeholder="输入验证码")
+              button(type="button", id="sendCode") 发送验证码
+              span#countdown(style="margin-left: 10px; color: gray;") 
+
+            button(type="button", id="nextStep2") 下一步
+
+          // Step 3: 开启双因素认证
+          .step-3(style="display:none")
+            p 请使用您的身份验证器应用程序扫描下面的二维码，以启用双重身份验证。
+            .qrcode-container
+              #qrcode-container
+
+            button(type="button", id="nextStep3") 下一步
+
+          .register-link
+            a(href="/login") 已有账户？在此登录。
+    script(src="/javascripts/registerSteps.js")

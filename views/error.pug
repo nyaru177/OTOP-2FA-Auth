@@ -1,0 +1,8 @@
+extends layout
+
+block content
+  .error-container
+    h1.error-title 错误: #{error.status || '未知错误'}
+    p.error-message= message
+    if error.stack
+      pre.error-stack #{error.stack}

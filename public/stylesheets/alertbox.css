@@ -1,0 +1,25 @@
+/* 基本弹窗样式 */
+.alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 9999;
+    font-size: 14px;
+    width: 300px;
+    text-align: center;
+}
+
+/* 成功消息 */
+.alert-success {
+    background-color: #28a745;
+    color: white;
+}
+
+/* 错误消息 */
+.alert-error {
+    background-color: #dc3545;
+    color: white;
+}

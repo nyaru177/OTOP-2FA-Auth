@@ -1,0 +1,40 @@
+doctype html
+html(lang="zh")
+  head
+    title 登录页面
+    link(rel="stylesheet", href="/stylesheets/auth.css")
+    link(rel="stylesheet", href="/stylesheets/alertbox.css")
+  body
+    .container
+      .form-container
+        h1 登录页面
+
+        // 用户名或邮箱 + 密码登录
+        form(id="username-password-login-form", action="/login-with-password", method="POST")
+          label(for="usernameOrEmail") 用户名或邮箱:
+          input(type="text" id="usernameOrEmail" name="usernameOrEmail" required)
+          label(for="password") 密码:
+          input(type="password" id="password" name="password" required)
+          button(type="submit") 登录
+
+        // 邮箱验证码登录
+        form(id="email-verification-login-form", action="/login-with-email", method="POST", style="display: none;")
+          label(for="email-verification") 输入您的邮箱以接收验证码:
+          input(type="email" id="email-verification" name="email" required)
+
+          label(for="verification-code") 输入验证码:
+          input(type="text" id="verification-code" name="verification-code" required)
+
+          button(id="send-verification-code", type="button") 发送验证码
+          br
+          br
+          button(type="submit") 提交
+
+        // 登录方式切换提示
+        .login-method
+          a(id="change-login-method", href="#") 切换到邮箱验证码登录
+
+        .register-link
+          a(href="/register") 没有账号？点击注册
+
+    script(src="/javascripts/login_method.js")
