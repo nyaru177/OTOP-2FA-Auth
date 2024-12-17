@@ -5,7 +5,7 @@ services:
     build: .
     container_name: auth-system-app
     ports:
-      - "3000:3000"
+      - "3020:3020"
     environment:
       MYSQL_HOST: mysql-container
       MYSQL_USER: root
