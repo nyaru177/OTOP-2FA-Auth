@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: auth-system-app
+    ports:
+      - "3000:3000"
+    environment:
+      MYSQL_HOST: mysql-container
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
+      MYSQL_DATABASE: auth_system_db
+      REDIS_HOST: redis-container
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - auth-network
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: auth_system_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db_init:/docker-entrypoint-initdb.d  # 自动初始化数据库
+    networks:
+      - auth-network
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    networks:
+      - auth-network
+
+networks:
+  auth-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local

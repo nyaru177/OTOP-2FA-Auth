@@ -1,0 +1,16 @@
+-- 创建数据库，如果不存在的话
+CREATE DATABASE IF NOT EXISTS identification;
+
+-- 使用该数据库
+USE identification;
+
+-- 创建表格，如果表格不存在
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  totp_secret VARCHAR(255) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
