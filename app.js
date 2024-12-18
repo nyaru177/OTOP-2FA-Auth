@@ -53,20 +53,20 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-// 启动服务器
-var http = require('http');
-const { log } = require('console');
-var debug = require('debug')('myapp:server');
+// // 启动服务器
+// var http = require('http');
+// const { log } = require('console');
+// var debug = require('debug')('myapp:server');
 
-// 设置端口
-var port = normalizePort(process.env.PORT || '3020');
-app.set('port', port);
+// // 设置端口
+// var port = normalizePort(process.env.PORT || '3020');
+// app.set('port', port);
 
-// 创建 HTTP 服务器并监听端口
-var server = http.createServer(app);
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+// // 创建 HTTP 服务器并监听端口
+// var server = http.createServer(app);
+// server.listen(port);
+// server.on('error', onError);
+// server.on('listening', onListening);
 
 // 端口转换函数
 function normalizePort(val) {
@@ -106,3 +106,6 @@ function onListening() {
   var bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+// 导出app实例
+module.exports = app;
