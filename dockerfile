@@ -13,9 +13,6 @@ RUN yarn install
 # 复制整个项目到容器中
 COPY . .
 
-# 安装 mysql-client 和 redis-client，以便与 MySQL 和 Redis 进行交互
-RUN apt-get update && apt-get install -y mysql-client-core-8.0 redis-tools
-
 # 启动 Express 应用
 CMD yarn start
 
