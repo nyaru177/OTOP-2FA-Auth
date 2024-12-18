@@ -2,7 +2,7 @@ const Redis = require('redis');
 
 // 创建 Redis 客户端实例
 const redis = Redis.createClient({
-  host: 'localhost', // 本地机器连接时使用 localhost
+  host: 'redis-container', // 本地机器连接时使用 localhost
   port: 6379,        // Redis 容器的端口
 });
 

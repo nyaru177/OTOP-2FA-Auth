@@ -17,7 +17,7 @@ services:
     networks:
       - auth-network
   mysql:
-    image: mysql:latest
+    image: mysql:8.0
     container_name: mysql-container
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
