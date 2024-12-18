@@ -10,20 +10,19 @@ services:
       MYSQL_HOST: mysql-container
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword
-      MYSQL_DATABASE: auth_system_db
+      MYSQL_DATABASE: identification
       REDIS_HOST: redis-container
     depends_on:
       - mysql
       - redis
     networks:
       - auth-network
-
   mysql:
     image: mysql:latest
     container_name: mysql-container
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: auth_system_db
+      MYSQL_DATABASE: identification
     ports:
       - "3306:3306"
     volumes:

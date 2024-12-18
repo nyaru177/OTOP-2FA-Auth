@@ -14,7 +14,7 @@ RUN yarn install
 COPY . .
 
 # 安装 mysql-client 和 redis-client，以便与 MySQL 和 Redis 进行交互
-RUN apt-get update && apt-get install -y mysql-client redis-tools
+RUN apt-get update && apt-get install -y mysql-client-core-8.0 redis-tools
 
 # 复制初始化脚本
 COPY db_init/init.sql /app/db_init/init.sql
