@@ -16,10 +16,13 @@ router.get('/register', (req, res) => {
 // 第一步：验证用户名、邮箱和密码
 router.post('/register/step1',
   [
-    body('username').notEmpty().withMessage('Username is required'),
-    body('email').isEmail().withMessage('Invalid email'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('confirmPassword').custom((value, { req }) => value === req.body.password).withMessage('Passwords do not match')
+    body('username').notEmpty().withMessage('用户名不能为空'),
+    body('email').isEmail().withMessage('邮箱格式不正确'),
+    body('password')
+      .isLength({ min: 8 }).withMessage('密码长度至少为8个字符')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+      .withMessage('密码必须包含至少一个大写字母、一个小写字母、一个数字和一个特殊字符(@$!%*?&)'),
+    body('confirmPassword').custom((value, { req }) => value === req.body.password).withMessage('两次输入的密码不一致')
   ],
   async (req, res) => {
     const errors = validationResult(req);
