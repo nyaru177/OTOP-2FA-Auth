@@ -7,7 +7,7 @@ const promisePool = require('../config/mysql'); // 假设你使用了 mysql2 的
 const sendMail = require('../public/javascripts/mail.js'); // 引入邮件发送模块
 const router = express.Router();
 const redisClient = require('../config/redis');
-
+const rateLimit = require('express-rate-limit');
 // 配置验证码发送限流
 const verificationCodeLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15分钟时间窗口

@@ -7,7 +7,7 @@ const redis = Redis.createClient({
 redis.connect() // 显式调用连接方法
   .then(() => {
     console.log('成功连接到 Redis');
-    console.log('Redis 连接地址:', process.env.REDIS_HOST);
+    console.log('Redis 连接地址:', redis.options.url);
   })
   .catch((err) => {
     console.error('Redis 连接错误:', err);
