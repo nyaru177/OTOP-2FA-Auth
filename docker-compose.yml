@@ -1,4 +1,3 @@
-
 services:
   app:
     build: .
@@ -10,12 +9,14 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword
       MYSQL_DATABASE: identification
-      REDIS_HOST: redis-container
+      REDIS_HOST: redis-container  # 使用固定的 IP 地址
     depends_on:
       - mysql
       - redis
     networks:
-      - auth-network
+      auth-network:
+        ipv4_address: 172.18.0.4  # 你也可以为 app 容器指定固定 IP
+
   mysql:
     image: mysql:8.0
     container_name: mysql-container
@@ -28,7 +29,14 @@ services:
       - mysql-data:/var/lib/mysql
       - ./db_init:/docker-entrypoint-initdb.d  # 自动初始化数据库
     networks:
-      - auth-network
+      auth-network:
+        ipv4_address: 172.18.0.2  # 为 mysql 容器指定固定 IP
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--host=localhost", "--user=root", "--password=rootpassword"]
+      interval: 30s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
 
   redis:
     image: redis:latest
@@ -36,11 +44,23 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - auth-network
+      auth-network:
+        ipv4_address: 172.18.0.3  # 为 redis 容器指定固定 IP
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
 
 networks:
   auth-network:
     driver: bridge
+    name: auth-network
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16  # 子网范围
+          gateway: 172.18.0.1
 
 volumes:
   mysql-data:
