@@ -8,8 +8,21 @@ const sendMail = require('../public/javascripts/mail.js'); // 引入邮件发送
 const router = express.Router();
 const redisClient = require('../config/redis');
 
+// 配置验证码发送限流
+const verificationCodeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15分钟时间窗口
+  max: 5, // 每个邮箱在15分钟内最多发送5次
+  handler: (req, res) => {
+    res.status(429).json({ 
+      success: false, 
+      message: '验证码请求过于频繁，请15分钟后再试' 
+    });
+  },
+  keyGenerator: (req) => req.body.email, // 使用邮箱地址作为限流的 key
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-const emailVerificationCodes = new Map();
 router.get('/register', (req, res) => {
   res.render('register');
 });
@@ -52,7 +65,7 @@ router.post('/register/step1',
 );
 
 // 带过期和等待时间限制的发送验证码接口
-router.post('/register/step2/send-code', async (req, res) => {
+router.post('/register/step2/send-code', verificationCodeLimiter,async (req, res) => {
   const { email } = req.body;
 
   if (!email) {

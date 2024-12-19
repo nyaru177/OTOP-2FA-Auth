@@ -8,16 +8,21 @@ const router = express.Router();
 const speakeasy = require('speakeasy');  // 用于生成和验证TOTP
 const rateLimit = require('express-rate-limit');
 
-// 存储验证码的内存对象
-const emailVerificationCodes = new Map();
-
 // 配置限流
 const verificationCodeLimiter = rateLimit({
-  windowMs: 15* 60 * 1000, // 15分钟
-  max: 5, // 每个IP地址在15分钟内最多允许1次请求
-  message: '验证码请求过于频繁，请1分钟后重试',
-  keyGenerator: (req) => req.body.email, // 邮箱地址作为限流的 key
+  windowMs: 15 * 60 * 1000, // 15分钟时间窗口
+  max: 5, // 每个邮箱在15分钟内最多发送5次
+  handler: (req, res) => {
+    res.status(429).json({ 
+      success: false, 
+      message: '验证码请求过于频繁，请15分钟后再试' 
+    });
+  },
+  keyGenerator: (req) => req.body.email, // 使用邮箱地址作为限流的 key
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+
 // 登录页面路由
 router.get('/login', (req, res) => {
   res.render('login');  // 渲染登录页面
