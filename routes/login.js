@@ -152,27 +152,23 @@ router.post('/send-verification-code', async (req, res) => {
       .update(`${req.ip}-${req.headers['user-agent']}-${email}`)
       .digest('hex');
 
-    // 将验证码和安全特征一起存储到 Redis
-    const verificationData = JSON.stringify({
-      code: verificationCode,
+    // 将安全特征存储到session
+    req.session.emailVerification = {
       nonce,
       timestamp,
-      fingerprint
-    });
+      fingerprint,
+      email
+    };
 
-    // 存储到 Redis，设置3分钟过期时间
-    await redisClient.set(`loginVerificationCode:${email}`, verificationData, 'EX', 180);
+    // 只存储验证码到Redis
+    await redisClient.set(`loginVerificationCode:${email}`, verificationCode, 'EX', 180);
 
     // 发送验证码邮件
     await sendMail(email, '登录验证码', `您的验证码是：${verificationCode}`);
 
-    // 返回安全特征
     res.status(200).json({ 
       success: true, 
-      message: '验证码已发送，请检查您的邮箱',
-      nonce,
-      timestamp,
-      fingerprint
+      message: '验证码已发送，请检查您的邮箱'
     });
   } catch (error) {
     console.error(error);
@@ -182,22 +178,18 @@ router.post('/send-verification-code', async (req, res) => {
 
 // 验证验证码
 router.post('/login-with-email', verificationCodeLimiter, async (req, res) => {
-  const { email, 'verification-code': verificationCode, nonce, timestamp, fingerprint } = req.body;
+  const { email, 'verification-code': verificationCode } = req.body;
 
-  if (!email || !verificationCode || !nonce || !timestamp || !fingerprint) {
-    return res.status(400).json({ success: false, message: '缺少必要的验证信息' });
+  if (!email || !verificationCode) {
+    return res.status(400).json({ success: false, message: '邮箱和验证码是必需的' });
   }
 
   try {
-    // 从 Redis 中获取存储的验证数据
-    const storedData = await redisClient.get(`loginVerificationCode:${email}`);
-
-    if (!storedData) {
-      return res.status(400).json({ success: false, message: '未发送验证码至此邮箱或验证码已过期' });
+    // 从session中获取验证信息
+    const verificationData = req.session.emailVerification;
+    if (!verificationData || verificationData.email !== email) {
+      return res.status(400).json({ success: false, message: '验证信息无效' });
     }
-
-    // 解析存储的数据
-    const verificationData = JSON.parse(storedData);
 
     // 验证安全特征
     const currentFingerprint = crypto
@@ -206,21 +198,26 @@ router.post('/login-with-email', verificationCodeLimiter, async (req, res) => {
       .digest('hex');
 
     // 验证所有特征
-    if (verificationData.nonce !== nonce || 
-        verificationData.timestamp !== parseInt(timestamp) ||
-        verificationData.fingerprint !== fingerprint ||
-        currentFingerprint !== fingerprint ||
-        Math.abs(Date.now() - parseInt(timestamp)) > 180000) { // 3分钟超时
+    if (verificationData.fingerprint !== currentFingerprint ||
+        Math.abs(Date.now() - verificationData.timestamp) > 180000) { // 3分钟超时
       return res.status(400).json({ 
         success: false, 
         message: '验证信息无效或已过期' 
       });
     }
 
+    // 从Redis获取验证码
+    const storedCode = await redisClient.get(`loginVerificationCode:${email}`);
+
+    if (!storedCode) {
+      return res.status(400).json({ success: false, message: '验证码已过期' });
+    }
+
     // 比较验证码
-    if (verificationData.code === verificationCode) {
-      // 验证成功，删除存储的验证数据
+    if (storedCode === verificationCode) {
+      // 验证成功，清除验证数据
       await redisClient.del(`loginVerificationCode:${email}`);
+      delete req.session.emailVerification;
 
       // 查询数据库以获取用户信息
       const [rows] = await promisePool.query(
