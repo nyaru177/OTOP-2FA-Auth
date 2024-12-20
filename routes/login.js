@@ -102,20 +102,27 @@ router.post('/login-with-password', async (req, res) => {
     };
     
     if (isPasswordValid) {
-      // 生成nonce
+      // 生成 nonce
       const nonce = crypto.randomBytes(16).toString('hex');
       const timestamp = Date.now();
   
-      // 存储nonce和时间戳到session
+      // 生成用户指纹 (包含 IP、User-Agent 等信息的哈希值)
+      const fingerprint = crypto
+        .createHash('sha256')
+        .update(`${req.ip}-${req.headers['user-agent']}-${user.id}`)
+        .digest('hex');
+
+      // 存储到 session
       req.session.nonce = nonce;
       req.session.timestamp = timestamp;
-  
-      // 返回成功响应并传递nonce和时间戳
+      req.session.fingerprint = fingerprint;
+
       return res.status(200).json({ 
         success: true, 
         message: '登录成功，跳转到 2FA 页面',
         nonce,
-        timestamp
+        timestamp,
+        fingerprint
       });
     }
 
@@ -136,15 +143,37 @@ router.post('/send-verification-code', async (req, res) => {
   try {
     // 生成验证码（6位数字）
     const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    
+    // 生成安全特征
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+    const fingerprint = crypto
+      .createHash('sha256')
+      .update(`${req.ip}-${req.headers['user-agent']}-${email}`)
+      .digest('hex');
 
-    // 存储验证码到 Redis，设置3分钟过期时间
-    await redisClient.set(`loginVerificationCode:${email}`, verificationCode, 'EX', 180);
+    // 将验证码和安全特征一起存储到 Redis
+    const verificationData = JSON.stringify({
+      code: verificationCode,
+      nonce,
+      timestamp,
+      fingerprint
+    });
+
+    // 存储到 Redis，设置3分钟过期时间
+    await redisClient.set(`loginVerificationCode:${email}`, verificationData, 'EX', 180);
 
     // 发送验证码邮件
     await sendMail(email, '登录验证码', `您的验证码是：${verificationCode}`);
 
-    // 返回成功响应
-    res.status(200).json({ success: true, message: '验证码已发送，请检查您的邮箱' });
+    // 返回安全特征
+    res.status(200).json({ 
+      success: true, 
+      message: '验证码已发送，请检查您的邮箱',
+      nonce,
+      timestamp,
+      fingerprint
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: '验证码发送失败，请稍后再试' });
@@ -153,23 +182,44 @@ router.post('/send-verification-code', async (req, res) => {
 
 // 验证验证码
 router.post('/login-with-email', verificationCodeLimiter, async (req, res) => {
-  const { email, 'verification-code': verificationCode } = req.body;
+  const { email, 'verification-code': verificationCode, nonce, timestamp, fingerprint } = req.body;
 
-  if (!email || !verificationCode) {
-    return res.status(400).json({ success: false, message: '邮箱和验证码是必需的' });
+  if (!email || !verificationCode || !nonce || !timestamp || !fingerprint) {
+    return res.status(400).json({ success: false, message: '缺少必要的验证信息' });
   }
 
   try {
-    // 从 Redis 中获取存储的验证码
-    const storedCode = await redisClient.get(`loginVerificationCode:${email}`);
+    // 从 Redis 中获取存储的验证数据
+    const storedData = await redisClient.get(`loginVerificationCode:${email}`);
 
-    if (!storedCode) {
+    if (!storedData) {
       return res.status(400).json({ success: false, message: '未发送验证码至此邮箱或验证码已过期' });
     }
 
+    // 解析存储的数据
+    const verificationData = JSON.parse(storedData);
+
+    // 验证安全特征
+    const currentFingerprint = crypto
+      .createHash('sha256')
+      .update(`${req.ip}-${req.headers['user-agent']}-${email}`)
+      .digest('hex');
+
+    // 验证所有特征
+    if (verificationData.nonce !== nonce || 
+        verificationData.timestamp !== parseInt(timestamp) ||
+        verificationData.fingerprint !== fingerprint ||
+        currentFingerprint !== fingerprint ||
+        Math.abs(Date.now() - parseInt(timestamp)) > 180000) { // 3分钟超时
+      return res.status(400).json({ 
+        success: false, 
+        message: '验证信息无效或已过期' 
+      });
+    }
+
     // 比较验证码
-    if (storedCode === verificationCode) {
-      // 验证成功，删除存储的验证码
+    if (verificationData.code === verificationCode) {
+      // 验证成功，删除存储的验证数据
       await redisClient.del(`loginVerificationCode:${email}`);
 
       // 查询数据库以获取用户信息
@@ -184,14 +234,14 @@ router.post('/login-with-email', verificationCodeLimiter, async (req, res) => {
 
       const user = rows[0];
 
-      // 设置会话或cookie
+      // 设置会话
       req.session.user = {
         id: user.id,
         username: user.username,
         email: user.email
       };
 
-      // 设置邮箱验证标志
+      // 设置邮箱验证标志，表示已完成验证
       req.session.isEmailVerified = true;
 
       // 设置cookie并返回成功信息
@@ -239,17 +289,25 @@ router.post('/twoFactorVerify', async (req, res) => {
 
     const user = rows[0];
 
-    // 从session中获取nonce和时间戳
+    // 在 2FA 验证时检查所有特征
     const nonce = req.session.nonce;
     const timestamp = req.session.timestamp;
+    const storedFingerprint = req.session.fingerprint;
 
-    if (!nonce || !timestamp) {
-      return res.status(400).json({ success: false, message: '请求无效，请重试' });
-    }
+    // 重新生成当前请求的指纹
+    const currentFingerprint = crypto
+      .createHash('sha256')
+      .update(`${req.ip}-${req.headers['user-agent']}-${user.id}`)
+      .digest('hex');
 
-    // 验证nonce和时间戳
-    if (Math.abs(Date.now() - timestamp) > 300000) { // 5分钟
-      return res.status(400).json({ success: false, message: '请求无效，请重试' });
+    // 验证所有特征
+    if (!nonce || !timestamp || !storedFingerprint || 
+        storedFingerprint !== currentFingerprint ||
+        Math.abs(Date.now() - timestamp) > 300000) { // 5分钟超时
+      return res.status(400).json({ 
+        success: false, 
+        message: '验证失败，请重新登录' 
+      });
     }
 
     // 使用speakeasy来验证TOTP
