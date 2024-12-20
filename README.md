@@ -109,3 +109,6 @@ OTOP-2FA-Auth 是一个基于 Express.js 的高安全性三级身份认证系统
 
 ## GitHub 仓库地址
 - [OTOP-2FA-Auth GitHub](https://github.com/nyaru177/OTOP-2FA-Auth)
+
+## 作者邮箱
+- 177022128@qq.com
