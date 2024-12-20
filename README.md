@@ -106,3 +106,6 @@ OTOP-2FA-Auth 是一个基于 Express.js 的高安全性三级身份认证系统
 - **会话时效**：1小时自动过期
 - **TOTP**：30秒刷新的动态令牌
 - **惟一数机制**：每次认证请求使用 `nonce` 和时间戳，防止重放攻击；通过指纹生成唯一标识符，确保请求的合法性和唯一性。
+
+## GitHub 仓库地址
+- [OTOP-2FA-Auth GitHub](https://github.com/nyaru177/OTOP-2FA-Auth)
