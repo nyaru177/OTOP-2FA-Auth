@@ -30,14 +30,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
         const usernameOrEmail = document.getElementById('usernameOrEmail').value;
         const password = document.getElementById('password').value;
+        const csrfToken = document.querySelector('input[name="_csrf"]').value; // 获取CSRF令牌
     
         try {
           const response = await fetch('/login-with-password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'CSRF-Token': csrfToken  // 在请求头中添加CSRF令牌
             },
-            body: JSON.stringify({ usernameOrEmail, password })
+            body: JSON.stringify({ 
+                usernameOrEmail, 
+                password,
+                _csrf: csrfToken  // 在请求体中也添加CSRF令牌
+            })
           });
     
           const data = await response.json(); // 解析返回的 JSON 数据
@@ -72,14 +78,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const email = emailVerificationInput.value;
         const verificationCode = verificationCodeInput.value;
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
     
         try {
             const response = await fetch('/login-with-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'CSRF-Token': csrfToken
                 },
-                body: JSON.stringify({ email, 'verification-code': verificationCode })
+                body: JSON.stringify({ 
+                    email, 
+                    'verification-code': verificationCode,
+                    _csrf: csrfToken
+                })
             });
     
             const data = await response.json(); // 解析返回的 JSON 数据
@@ -100,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 发送验证码功能
     sendVerificationCodeBtn.addEventListener('click', function() {
         const email = emailVerificationInput.value;
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
         if (!email) {
             alert('请输入有效的邮箱地址');
@@ -111,8 +124,12 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'CSRF-Token': csrfToken
             },
-            body: JSON.stringify({ email: email }),
+            body: JSON.stringify({ 
+                email: email,
+                _csrf: csrfToken
+            }),
         })
         .then(response => response.json())
         .then(data => {

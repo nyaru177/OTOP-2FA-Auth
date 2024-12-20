@@ -6,21 +6,10 @@ var createError = require('http-errors');
 const session = require('express-session');
 const {RedisStore} = require("connect-redis")
 const redis = require('./config/redis');  // 引入 Redis 客户端实例
+var csurf = require('csurf');
 
 // 创建 express 应用实例
 var app = express();
-
-
-app.use(session({
-  store: new RedisStore({ client: redis }),  // 创建 RedisStore 实例，并传入 Redis 客户端
-  secret: 'your-secret-key',  // 用来加密 session ID
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: true,  // 禁止 JavaScript 访问 cookie
-    maxAge: 3600000,  // 设置 session 有效期为1小时
-  }
-}));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -32,6 +21,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.use(session({
+  store: new RedisStore({ client: redis }),  // 创建 RedisStore 实例，并传入 Redis 客户端
+  secret: '2021141490273_wanglei',  // 用来加密 session ID
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,  // 禁止 JavaScript 访问 cookie
+    maxAge: 3600000,  // 设置 session 有效期为1小时
+  }
+}));
+// 配置CSRF保护
+app.use(csurf());
 
 // 引入路由模块
 var indexRouter = require('./routes/index');  // 首页路由
@@ -47,12 +50,22 @@ app.use(function(req, res, next) {
 
 // 错误处理器
 app.use(function(err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-  res.status(err.status || 500);
-  res.render('error');
+  if (err.code === 'EBADCSRFTOKEN') {
+    // CSRF令牌验证失败
+    res.status(403);
+    res.send('表单已过期，请刷新页面后重试');
+  } else {
+    // 其他错误
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
+    res.status(err.status || 500);
+    res.render('error');
+  }
 });
+/*
 
+  启动服务器集成到了bin/www文件中
+*/
 // // 启动服务器
 // var http = require('http');
 // const { log } = require('console');

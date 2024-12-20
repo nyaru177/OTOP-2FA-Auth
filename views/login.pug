@@ -11,6 +11,7 @@ html(lang="zh")
 
         // 用户名或邮箱 + 密码登录
         form(id="username-password-login-form", action="/login-with-password", method="POST")
+          input(type="hidden", name="_csrf", value=csrfToken)
           label(for="usernameOrEmail") 用户名或邮箱:
           input(type="text" id="usernameOrEmail" name="usernameOrEmail" required)
           label(for="password") 密码:
@@ -19,6 +20,7 @@ html(lang="zh")
 
         // 邮箱验证码登录
         form(id="email-verification-login-form", action="/login-with-email", method="POST", style="display: none;")
+          input(type="hidden", name="_csrf", value=csrfToken)
           label(for="email-verification") 输入您的邮箱以接收验证码:
           input(type="email" id="email-verification" name="email" required)
 

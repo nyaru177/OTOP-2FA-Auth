@@ -6,14 +6,19 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault(); // 阻止表单默认提交
 
         const otp = otpInput.value;
+        const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
         try {
             const response = await fetch('/twoFactorVerify', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'CSRF-Token': csrfToken
                 },
-                body: JSON.stringify({ otp })
+                body: JSON.stringify({ 
+                    otp,
+                    _csrf: csrfToken 
+                })
             });
 
             const data = await response.json(); // 解析返回的 JSON 数据

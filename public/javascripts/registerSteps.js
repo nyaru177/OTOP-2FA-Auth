@@ -33,12 +33,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = emailInput.value;
     const password = passwordInput.value;
     const confirmPassword = confirmPasswordInput.value;
+    const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
     try {
       const response = await fetch('/register/step1', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password, confirmPassword }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ 
+          username, 
+          email, 
+          password, 
+          confirmPassword,
+          _csrf: csrfToken 
+        }),
       });
 
       const data = await response.json();
@@ -59,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sendCode.addEventListener('click', async () => {
     const email = emailInput.value;
+    const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
     if (!email) {
       return alert('请输入有效的邮箱');
@@ -67,8 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/register/step2/send-code', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ 
+          email,
+          _csrf: csrfToken 
+        }),
       });
 
       const data = await response.json();
@@ -101,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
   nextStep2.addEventListener('click', async () => {
     const email = emailInput.value;
     const code = emailCodeInput.value;
+    const csrfToken = document.querySelector('input[name="_csrf"]').value;
 
     if (!email || !code) {
       return alert('请输入邮箱和验证码');
@@ -109,8 +127,15 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/register/step2/verify-code', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ 
+          email, 
+          code,
+          _csrf: csrfToken 
+        }),
       });
 
       const data = await response.json();

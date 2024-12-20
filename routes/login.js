@@ -25,11 +25,14 @@ const verificationCodeLimiter = rateLimit({
 
 // 登录页面路由
 router.get('/login', (req, res) => {
-  res.render('login');  // 渲染登录页面
+  const csrfToken = req.csrfToken();
+  res.render('login', { csrfToken });  // 将CSRF令牌传递给视图
+  // console.log(csrfToken);
 });
 
 // 邮箱和密码登录验证
 router.post('/login-with-password', async (req, res) => {
+  // console.log("req.body._csrf",req.body._csrf);
   const { usernameOrEmail, password } = req.body;
   const key = `loginAttempts:${usernameOrEmail}`;
 
@@ -121,6 +124,7 @@ router.post('/login-with-password', async (req, res) => {
     return res.status(500).json({ success: false, message: '服务器错误' });
   }
 });
+
 // 发送验证码的路由
 router.post('/send-verification-code', async (req, res) => {
   const { email } = req.body;
@@ -203,7 +207,8 @@ router.post('/login-with-email', verificationCodeLimiter, async (req, res) => {
 });
 
 router.get('/twoFactorVerify', (req, res) => {
-  res.render('twoFactor');  // 渲染 2FA 验证页面
+  const csrfToken = req.csrfToken();
+  res.render('twoFactor', { csrfToken });  // 将CSRF令牌传递给视图
 });
 
 // 2FA 验证路由

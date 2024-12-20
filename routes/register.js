@@ -22,9 +22,11 @@ const verificationCodeLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
+// 注册页面
 router.get('/register', (req, res) => {
-  res.render('register');
+  const csrfToken = req.csrfToken();
+  // 处理GET请求的路由中，生成CSRF令牌并将其传递给视图模板
+  res.render('register', { csrfToken });
 });
 // 第一步：验证用户名、邮箱和密码
 router.post('/register/step1',
@@ -105,7 +107,7 @@ router.post('/register/step2/send-code', verificationCodeLimiter,async (req, res
     res.status(500).json({ success: false, message: 'Failed to send verification code' });
   }
 });
-
+// 第二步：验证邮箱
 router.post('/register/step2/verify-code', async (req, res) => {
   const { email, code } = req.body;
 

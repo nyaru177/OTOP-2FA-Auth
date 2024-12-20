@@ -23,6 +23,9 @@ html(lang="en")
 
         // 注册表单
         form(action="/register", method="POST", id="registerForm")
+          // 添加CSRF隐藏字段
+          input(type="hidden", name="_csrf", value=csrfToken)
+          
           // Step 1: 填写用户名、邮箱、密码和确认密码
           .step-1
             label(for="username") 用户名：

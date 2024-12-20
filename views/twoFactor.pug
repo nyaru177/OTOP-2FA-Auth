@@ -12,6 +12,7 @@ html(lang="zh")
         h1 2FA 验证
         p.description 请打开您的 2FA 应用并输入一次性密码
         form(action="/twoFactorVerify", method="POST")
+          input(type="hidden", name="_csrf", value=csrfToken)
           .form-group
             label(for="otp") 验证码:
             input(type="text", id="otp", name="otp", required)
